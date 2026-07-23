@@ -42,6 +42,10 @@ export default function PracticeScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [progress] = useState(80);
   const creatingRef = useRef(false);
+  // Empêche un ré-appui fantôme juste après un relâchement (bug connu de
+  // Pressable) de couper la réponse en cours ou de relancer un cycle.
+  const lastReleaseAtRef = useRef(0);
+  const MIN_GAP_MS = 500;
 
   const {
     phase,
@@ -69,6 +73,9 @@ export default function PracticeScreen() {
   }, [conversationId]);
 
   const onPressIn = async () => {
+    // Ignore tout appui qui arrive juste après un relâchement (appui fantôme).
+    if (Date.now() - lastReleaseAtRef.current < MIN_GAP_MS) return;
+
     if (phase === "speaking") {
       cancelSpeaking();
       return;
@@ -81,6 +88,7 @@ export default function PracticeScreen() {
 
   const onPressOut = async () => {
     if (phase === "recording") await stopRecordingAndRespond();
+    lastReleaseAtRef.current = Date.now();
   };
 
   const onStop = async () => {
@@ -184,7 +192,7 @@ export default function PracticeScreen() {
                   shadowOffset: { width: 0, height: 8 },
 
                   opacity: isBusy ? 0.45 : 1,
-                  transform: [{ scale: 0.5? 0.96 : 1 }],
+                  transform: [{ scale: isRecording ? 1.05 : 1 }],
                               }}
               >
                 <Mic size={70} color="white" />

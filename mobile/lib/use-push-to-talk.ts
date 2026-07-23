@@ -36,6 +36,10 @@ export function usePushToTalk(conversationId: number | null) {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
   const permissionRequested = useRef(false);
+  // Verrou synchrone anti double-déclenchement (ex : Pressable qui émet
+  // onPressOut deux fois avant que le state React n'ait été mis à jour).
+  const stoppingRef = useRef(false);
+  const startingRef = useRef(false);
 
   // Demande d'accès micro une seule fois au montage.
   useEffect(() => {
@@ -55,6 +59,8 @@ export function usePushToTalk(conversationId: number | null) {
 
   const startRecording = useCallback(async () => {
     if (!conversationId || phase !== "idle") return;
+    if (startingRef.current) return;
+    startingRef.current = true;
     try {
       await audioRecorder.prepareToRecordAsync();
       audioRecorder.record();
@@ -62,11 +68,15 @@ export function usePushToTalk(conversationId: number | null) {
     } catch (err) {
       console.error("startRecording error:", err);
       Alert.alert("Erreur", "Impossible de démarrer l'enregistrement.");
+    } finally {
+      startingRef.current = false;
     }
   }, [audioRecorder, conversationId, phase]);
 
   const stopRecordingAndRespond = useCallback(async () => {
     if (!conversationId || phase !== "recording") return;
+    if (stoppingRef.current) return;
+    stoppingRef.current = true;
     try {
       await audioRecorder.stop();
       const uri = audioRecorder.uri;
@@ -102,6 +112,8 @@ export function usePushToTalk(conversationId: number | null) {
       console.error("stopRecordingAndRespond error:", err);
       Alert.alert("Erreur", "Impossible d'obtenir une réponse. Réessayez.");
       setPhase("idle");
+    } finally {
+      stoppingRef.current = false;
     }
   }, [audioRecorder, conversationId, phase, history]);
 
