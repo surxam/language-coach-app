@@ -1,0 +1,197 @@
+import { useCallback, useRef, useState } from "react";
+import { View, Text, Pressable, Alert, SafeAreaView, StatusBar } from "react-native";
+import { useRouter, useNavigation } from "expo-router";
+import { DrawerActions } from "@react-navigation/native";
+import { Mic, StopCircle, Menu, Award } from "lucide-react-native";
+import * as api from "@/lib/api";
+import { usePushToTalk } from "@/lib/use-push-to-talk";
+
+const BG      = "#F8F5F7";
+const CARD    = "#FFFFFF";
+const BRAND   = "#5B55F6";
+const RED     = "#E62C31";
+const TEXT    = "#1E1B22";
+const MUTED   = "#8A8690";
+const GREEN   = "#6EF0C4";
+
+const PHASE_LABEL: Record<string, string> = {
+  idle: "Maintenez pour discuter",
+  recording: "Parlez maintenant…",
+  thinking: "Votre coach réfléchit…",
+  speaking: "Votre coach parle…",
+};
+const PHASE_SUB: Record<string, string> = {
+  idle: "Lâchez pour envoyer votre message",
+  recording: "Relâchez quand vous avez terminé",
+  thinking: "L'IA analyse votre réponse…",
+  speaking: "Appuyez pour interrompre",
+};
+
+export default function HomeScreen() {
+  const router = useRouter();
+  const navigation = useNavigation();
+  const openDrawer = () => navigation.dispatch(DrawerActions.openDrawer());
+
+  const [conversationId, setConversationId] = useState<number | null>(null);
+  const [ending, setEnding] = useState(false);
+  const [progress] = useState(80);
+  const creatingRef = useRef(false);
+
+  const {
+    phase, history,
+    startRecording, stopRecordingAndRespond,
+    cancelSpeaking, resetHistory,
+  } = usePushToTalk(conversationId);
+
+  const ensureConversation = useCallback(async (): Promise<number | null> => {
+    if (conversationId) return conversationId;
+    if (creatingRef.current) return null;
+    creatingRef.current = true;
+    try {
+      const { conversation } = await api.startConversation();
+      setConversationId(conversation.id);
+      return conversation.id;
+    } catch {
+      Alert.alert("Erreur", "Impossible de démarrer une conversation.");
+      return null;
+    } finally { creatingRef.current = false; }
+  }, [conversationId]);
+
+  const onPressIn = async () => {
+    if (phase === "speaking") { cancelSpeaking(); return; }
+    if (phase !== "idle") return;
+    const id = await ensureConversation();
+    if (id) await startRecording();
+  };
+
+  const onPressOut = async () => {
+    if (phase === "recording") await stopRecordingAndRespond();
+  };
+
+  const onStop = async () => {
+    if (!conversationId) { router.replace("/session-ended"); return; }
+    setEnding(true);
+    try {
+      await api.endConversation(conversationId, history);
+      const savedId = conversationId;
+      setConversationId(null);
+      resetHistory();
+      router.replace({ pathname: "/session-ended", params: { id: String(savedId) } });
+    } catch {
+      Alert.alert("Erreur", "Impossible de terminer la discussion.");
+    } finally { setEnding(false); }
+  };
+
+  const isRecording = phase === "recording";
+  const isBusy = phase === "thinking";
+
+  return (
+    <View style={{ flex: 1, backgroundColor: BG }}>
+      <StatusBar barStyle="dark-content" backgroundColor={BG} />
+      <SafeAreaView style={{ flex: 1 }}>
+        {/* Header */}
+        <View style={{
+          flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+          paddingHorizontal: 20, paddingTop: 10, paddingBottom: 6,
+        }}>
+          <Pressable hitSlop={10} onPress={openDrawer}>
+            <Menu size={23} color={TEXT} strokeWidth={2.4} />
+          </Pressable>
+          <Text style={{ color: BRAND, fontSize: 21, fontWeight: "800", letterSpacing: -0.4 }}>
+            LinguistFlow
+          </Text>
+          <Pressable
+            onPress={openDrawer}
+            style={{
+              width: 38, height: 38, borderRadius: 19,
+              backgroundColor: "#EEF2FF", borderWidth: 2, borderColor: BRAND,
+              alignItems: "center", justifyContent: "center",
+            }}
+          >
+            <Text style={{ color: BRAND, fontSize: 13, fontWeight: "800" }}>U</Text>
+          </Pressable>
+        </View>
+
+        {/* Contenu (flux normal) */}
+        <View style={{ flex: 1, paddingHorizontal: 22, justifyContent: "space-between" }}>
+          <View style={{ alignItems: "center", marginTop: 28 }}>
+            <Text style={{ color: TEXT, fontSize: 27, fontWeight: "800", textAlign: "center", letterSpacing: -0.6 }}>
+              {PHASE_LABEL[phase]}
+            </Text>
+            <Text style={{ color: MUTED, fontSize: 15, marginTop: 6, textAlign: "center" }}>
+              {PHASE_SUB[phase]}
+            </Text>
+          </View>
+
+          <View style={{ alignItems: "center" }}>
+            <Pressable
+              onPressIn={onPressIn}
+              onPressOut={onPressOut}
+              disabled={isBusy}
+              style={({ pressed }) => ({
+                width: 148, height: 148, borderRadius: 74,
+                backgroundColor: isRecording ? "#C91F27" : RED,
+                alignItems: "center", justifyContent: "center",
+                opacity: isBusy ? 0.45 : 1,
+                shadowColor: RED,
+                shadowOpacity: isRecording ? 0.5 : 0.32,
+                shadowRadius: isRecording ? 30 : 20,
+                shadowOffset: { width: 0, height: 8 },
+                elevation: 10,
+                transform: [{ scale: isRecording ? 1.05 : pressed ? 0.96 : 1 }],
+              })}
+            >
+              <Mic size={52} color="#fff" strokeWidth={2.4} />
+            </Pressable>
+          </View>
+
+          <View>
+            {/* Progression quotidienne */}
+            <View style={{
+              backgroundColor: CARD, borderRadius: 18, padding: 16,
+              shadowColor: "#0F172A", shadowOpacity: 0.05,
+              shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+              elevation: 2,
+            }}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View style={{
+                  width: 42, height: 42, borderRadius: 10, backgroundColor: GREEN,
+                  alignItems: "center", justifyContent: "center", marginRight: 14,
+                }}>
+                  <Award size={21} color="#1E1B22" strokeWidth={2.2} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                    <Text style={{ color: TEXT, fontSize: 15, fontWeight: "500" }}>Progression quotidienne</Text>
+                    <Text style={{ color: BRAND, fontSize: 15, fontWeight: "700" }}>{progress}%</Text>
+                  </View>
+                  <View style={{ height: 7, marginTop: 8, backgroundColor: "#E7E3E8", borderRadius: 999, overflow: "hidden" }}>
+                    <View style={{ width: `${progress}%`, height: "100%", borderRadius: 999, backgroundColor: BRAND }} />
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            {/* Bouton arrêter */}
+            <Pressable
+              onPress={onStop}
+              disabled={ending}
+              style={({ pressed }) => ({
+                height: 58, marginTop: 16, marginBottom: 14,
+                borderRadius: 29, borderWidth: 1.5, borderColor: "#DDD8DE",
+                backgroundColor: CARD,
+                flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
+                opacity: ending ? 0.55 : pressed ? 0.7 : 1,
+              })}
+            >
+              <StopCircle size={19} color="#5D5960" strokeWidth={2.1} />
+              <Text style={{ color: "#5D5960", fontSize: 15, fontWeight: "500" }}>
+                {ending ? "Finalisation..." : "Arrêter la discussion"}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </SafeAreaView>
+    </View>
+  );
+}

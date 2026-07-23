@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Coach Conversation",
+    "slug": "coach-conversation",
+    "scheme": "coachconversation",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+    "splash": {
+      "backgroundColor": "#E7E7E5"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.example.coachconversation",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Le micro est utilisé pour vous permettre de parler à votre coach IA."
+      }
+    },
+    "android": {
+      "package": "com.example.coachconversation",
+      "permissions": ["RECORD_AUDIO"]
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Le micro est utilisé pour vous permettre de parler à votre coach IA."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
