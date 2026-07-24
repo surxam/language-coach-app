@@ -28,18 +28,24 @@ function NavItem({ icon, label, active, onPress }: {
   if (active) {
     return (
       <Pressable onPress={onPress} style={{
-        flexDirection: "row", alignItems: "center", gap: 7,
-        backgroundColor: BRAND, borderRadius: 22, paddingHorizontal: 18, paddingVertical: 10,
+        flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
+        backgroundColor: BRAND, borderRadius: 22, marginHorizontal: 6, paddingVertical: 10,
       }}>
         {icon}
-        <Text style={{ fontSize: 13, fontWeight: "700", color: "#fff" }}>{label}</Text>
+        <Text numberOfLines={1} allowFontScaling={false}
+          style={{ fontSize: 12, fontWeight: "700", color: "#fff", flexShrink: 1 }}>
+          {label}
+        </Text>
       </Pressable>
     );
   }
   return (
-    <Pressable onPress={onPress} style={{ alignItems: "center", gap: 3, paddingTop: 4 }}>
+    <Pressable onPress={onPress} style={{ flex: 1, alignItems: "center", gap: 3, paddingTop: 4 }}>
       {icon}
-      <Text style={{ fontSize: 11, fontWeight: "500", color: INACTIVE }}>{label}</Text>
+      <Text numberOfLines={1} allowFontScaling={false}
+        style={{ fontSize: 11, fontWeight: "500", color: INACTIVE }}>
+        {label}
+      </Text>
     </Pressable>
   );
 }

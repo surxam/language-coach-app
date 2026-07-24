@@ -62,20 +62,14 @@ export function ProfileMenu({ visible, onClose }: { visible: boolean; onClose: (
           {/* Navigation */}
           <View style={{ gap: 22 }}>
             <Pressable onPress={() => go("/")}
-              style={({ pressed }) => ({
-                flexDirection: "row", alignItems: "center", gap: 12,
-                opacity: pressed ? 0.6 : 1,
-              })}
+              style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
             >
               <Award size={19} color={TEXT} strokeWidth={1.8} />
               <Text style={{ color: TEXT, fontSize: 15, fontWeight: "500" }}>Pratique</Text>
             </Pressable>
 
             <Pressable onPress={() => go("/history")}
-              style={({ pressed }) => ({
-                flexDirection: "row", alignItems: "center", gap: 12,
-                opacity: pressed ? 0.6 : 1,
-              })}
+              style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
             >
               <Bookmark size={19} color={TEXT} strokeWidth={1.8} />
               <Text style={{ color: TEXT, fontSize: 15, fontWeight: "500" }}>Historique</Text>
@@ -85,10 +79,7 @@ export function ProfileMenu({ visible, onClose }: { visible: boolean; onClose: (
           {/* Déconnexion */}
           <View style={{ flex: 1, justifyContent: "flex-end" }}>
             <Pressable onPress={onLogout}
-              style={({ pressed }) => ({
-                flexDirection: "row", alignItems: "center", gap: 9,
-                opacity: pressed ? 0.6 : 1,
-              })}
+              style={{ flexDirection: "row", alignItems: "center", gap: 9 }}
             >
               <LogOut size={17} color={RED} strokeWidth={1.8} />
               <Text style={{ color: RED, fontSize: 14, fontWeight: "500" }}>Deconnexion</Text>

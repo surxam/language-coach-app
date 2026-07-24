@@ -42,10 +42,6 @@ export default function PracticeScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [progress] = useState(80);
   const creatingRef = useRef(false);
-  // Empêche un ré-appui fantôme juste après un relâchement (bug connu de
-  // Pressable) de couper la réponse en cours ou de relancer un cycle.
-  const lastReleaseAtRef = useRef(0);
-  const MIN_GAP_MS = 500;
 
   const {
     phase,
@@ -73,9 +69,6 @@ export default function PracticeScreen() {
   }, [conversationId]);
 
   const onPressIn = async () => {
-    // Ignore tout appui qui arrive juste après un relâchement (appui fantôme).
-    if (Date.now() - lastReleaseAtRef.current < MIN_GAP_MS) return;
-
     if (phase === "speaking") {
       cancelSpeaking();
       return;
@@ -83,12 +76,11 @@ export default function PracticeScreen() {
     if (phase !== "idle") return;
 
     const id = await ensureConversation();
-    if (id) await startRecording();
+    if (id) await startRecording(id);
   };
 
   const onPressOut = async () => {
     if (phase === "recording") await stopRecordingAndRespond();
-    lastReleaseAtRef.current = Date.now();
   };
 
   const onStop = async () => {
@@ -170,10 +162,11 @@ export default function PracticeScreen() {
             </View>
 
             <View style={{ alignItems: "center", marginTop: 40, marginBottom: 22 }}>
-              <Pressable 
-               onPressIn={onPressIn}
-                onPressOut={onPressOut}
-                disabled={isBusy}
+              <View
+              onStartShouldSetResponder={() => true}
+                onResponderGrant={onPressIn}
+                onResponderRelease={onPressOut}
+                onResponderTerminate={onPressOut}
                 style={{
                   width: 250,
                   height: 250,
@@ -181,22 +174,20 @@ export default function PracticeScreen() {
                   backgroundColor: "#E62C31",
                   justifyContent: "center",
                   alignItems: "center",
-                  display: "flex",
                   zIndex: 999,
                   elevation: 20,
 
-                  // Ombre
                   shadowColor: RED,
                   shadowOpacity: 0.4,
                   shadowRadius: 20,
                   shadowOffset: { width: 0, height: 8 },
 
                   opacity: isBusy ? 0.45 : 1,
-                  transform: [{ scale: isRecording ? 1.05 : 1 }],
-                              }}
+                  transform: [{ scale: phase === "recording" ? 1.05 : 1 }],
+                }}
               >
                 <Mic size={70} color="white" />
-              </Pressable>
+              </View>
             </View>
 
             <View style={{ flex: 1 }} />
@@ -243,7 +234,7 @@ export default function PracticeScreen() {
             <Pressable
               onPress={onStop}
               disabled={ending}
-              style={({ pressed }) => ({
+              style={{
                 width: "100%",
                 height: 68,
                 marginTop: 24,
@@ -255,8 +246,8 @@ export default function PracticeScreen() {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 8,
-                opacity: ending ? 0.55 : pressed ? 0.7 : 1,
-              })}
+                opacity: ending ? 0.55 : 1,
+              }}
             >
               <StopCircle size={20} color="#5D5960" strokeWidth={2.2} />
               <Text style={{ color: "#5D5960", fontSize: 17, fontWeight: "500" }}>

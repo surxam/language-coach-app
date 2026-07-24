@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import {
-  View, Text, ScrollView, Pressable,
+  View, Text, ScrollView, Pressable, Alert,
   ActivityIndicator, SafeAreaView, StatusBar,
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -57,6 +57,7 @@ export default function HistoryScreen() {
   const [conversations, setConversations] = useState<api.Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -67,6 +68,36 @@ export default function HistoryScreen() {
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const handleDelete = useCallback((conv: api.Conversation) => {
+    const theme = conv.correction?.feedback?.theme ?? "cette session";
+    Alert.alert(
+      "Supprimer la conversation",
+      `Voulez-vous vraiment supprimer "${theme}" ? Cette action est irréversible.`,
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Supprimer",
+          style: "destructive",
+          onPress: async () => {
+            setDeletingId(conv.id);
+            // Suppression optimiste : on retire tout de suite la carte de la liste.
+            const previous = conversations;
+            setConversations((prev) => prev.filter((c) => c.id !== conv.id));
+            try {
+              await api.deleteConversation(conv.id);
+            } catch {
+              // En cas d'échec, on remet la conversation dans la liste.
+              setConversations(previous);
+              Alert.alert("Erreur", "Impossible de supprimer cette conversation.");
+            } finally {
+              setDeletingId(null);
+            }
+          },
+        },
+      ]
+    );
+  }, [conversations]);
 
   const avg = conversations.length
     ? (conversations.reduce((s, c) => s + (c.correction?.score ?? 0), 0) / conversations.length).toFixed(1)
@@ -173,12 +204,12 @@ export default function HistoryScreen() {
                       <Pressable
                         key={conv.id}
                         onPress={() => router.push(`/conversation/${conv.id}`)}
-                        style={({ pressed }) => ({
+                        style={{
                           backgroundColor: CARD, borderRadius: 16, padding: 14,
                           flexDirection: "row", alignItems: "center",
                           shadowColor: "#0F172A", shadowOpacity: 0.05, shadowRadius: 8,
-                          shadowOffset: { width: 0, height: 3 }, opacity: pressed ? 0.85 : 1,
-                        })}
+                          shadowOffset: { width: 0, height: 3 },
+                        }}
                       >
                         <View style={{
                           width: 40, height: 40, borderRadius: 12, backgroundColor: ts.bg,
@@ -205,8 +236,17 @@ export default function HistoryScreen() {
                           </Text>
                         </View>
 
-                        <Pressable hitSlop={10}>
-                          <Trash2 size={17} color={RED} />
+                        <Pressable
+                          hitSlop={10}
+                          disabled={deletingId === conv.id}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            handleDelete(conv);
+                          }}
+                        >
+                          {deletingId === conv.id
+                            ? <ActivityIndicator size="small" color={RED} />
+                            : <Trash2 size={17} color={RED} />}
                         </Pressable>
                       </Pressable>
                     );

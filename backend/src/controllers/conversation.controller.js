@@ -163,6 +163,27 @@ async function getConversation(req, res) {
   }
 }
 
+// DELETE /api/conversations/:id
+async function deleteConversation(req, res) {
+  try {
+    const { id } = req.params;
+    const [conv] = await pool.query(
+      "SELECT id FROM conversations WHERE id = ? AND user_id = ?",
+      [id, req.user.id]
+    );
+    if (conv.length === 0) {
+      return res.status(404).json({ message: "Conversation introuvable." });
+    }
+    // La suppression cascade automatiquement sur `corrections`
+    // (contrainte ON DELETE CASCADE définie dans le schéma SQL).
+    await pool.query("DELETE FROM conversations WHERE id = ?", [id]);
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("deleteConversation error:", err);
+    return res.status(500).json({ message: "Impossible de supprimer la conversation." });
+  }
+}
+
 function formatRow(row) {
   const startedAt = row.started_at;
   const endedAt = row.ended_at;
@@ -192,4 +213,5 @@ module.exports = {
   endConversation,
   listConversations,
   getConversation,
+  deleteConversation,
 };

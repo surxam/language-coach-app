@@ -196,11 +196,11 @@ export default function ReviewScreen() {
 
           <Pressable
             onPress={() => router.replace("/")}
-            style={({ pressed }) => ({
-              backgroundColor: pressed ? BRAND_D : BRAND,
+            style={{
+              backgroundColor: BRAND,
               borderRadius: 16, height: 56, marginTop: 24,
               flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
-            })}
+            }}
           >
             <Text style={{ color: "#fff", fontSize: 16, fontWeight: "700" }}>Réessayer</Text>
           </Pressable>

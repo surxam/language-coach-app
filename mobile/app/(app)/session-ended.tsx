@@ -29,18 +29,24 @@ function NavItem({ icon, label, active, onPress }: {
   if (active) {
     return (
       <Pressable onPress={onPress} style={{
-        flexDirection: "row", alignItems: "center", gap: 7,
-        backgroundColor: BRAND, borderRadius: 22, paddingHorizontal: 18, paddingVertical: 10,
+        flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
+        backgroundColor: BRAND, borderRadius: 22, marginHorizontal: 6, paddingVertical: 10,
       }}>
         {icon}
-        <Text style={{ fontSize: 13, fontWeight: "700", color: "#fff" }}>{label}</Text>
+        <Text numberOfLines={1} allowFontScaling={false}
+          style={{ fontSize: 12, fontWeight: "700", color: "#fff", flexShrink: 1 }}>
+          {label}
+        </Text>
       </Pressable>
     );
   }
   return (
-    <Pressable onPress={onPress} style={{ alignItems: "center", gap: 3, paddingTop: 4 }}>
+    <Pressable onPress={onPress} style={{ flex: 1, alignItems: "center", gap: 3, paddingTop: 4 }}>
       {icon}
-      <Text style={{ fontSize: 11, fontWeight: "500", color: INACTIVE }}>{label}</Text>
+      <Text numberOfLines={1} allowFontScaling={false}
+        style={{ fontSize: 11, fontWeight: "500", color: INACTIVE }}>
+        {label}
+      </Text>
     </Pressable>
   );
 }
@@ -85,7 +91,7 @@ export default function SessionEndedScreen() {
           flexDirection: "row", alignItems: "center", justifyContent: "space-between",
           paddingHorizontal: 20, paddingTop: 10, paddingBottom: 6,
         }}>
-          <Pressable hitSlop={10}><Menu size={23} color={TEXT} strokeWidth={2.4} /></Pressable>
+          <Pressable hitSlop={10} onPress={() => setMenuOpen(true)}><Menu size={23} color={TEXT} strokeWidth={2.4} /></Pressable>
           <Text style={{ color: BRAND, fontSize: 21, fontWeight: "800", letterSpacing: -0.4 }}>
             LinguistFlow
           </Text>
@@ -200,11 +206,11 @@ export default function SessionEndedScreen() {
           {/* Bouton réessayer */}
           <Pressable
             onPress={() => router.replace("/")}
-            style={({ pressed }) => ({
-              backgroundColor: pressed ? BRAND_D : BRAND,
+            style={{
+              backgroundColor: BRAND,
               borderRadius: 16, height: 56, marginTop: 24,
               flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
-            })}
+            }}
           >
             <RefreshCw size={18} color="#fff" />
             <Text style={{ color: "#fff", fontSize: 16, fontWeight: "700" }}>Réessayer</Text>

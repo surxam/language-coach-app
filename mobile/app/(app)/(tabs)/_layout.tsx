@@ -13,19 +13,32 @@ function TabIcon({ icon, activeIcon, label, focused }: {
   if (focused) {
     return (
       <View style={{
-        flexDirection: "row", alignItems: "center", gap: 7,
+        flexDirection: "row", alignItems: "center", gap: 6,
         backgroundColor: ACTIVE_COL, borderRadius: 22,
-        paddingHorizontal: 18, paddingVertical: 10,
+        paddingHorizontal: 14, paddingVertical: 10,
+        maxWidth: 120,
       }}>
         {activeIcon}
-        <Text style={{ fontSize: 13, fontWeight: "700", color: "#fff" }}>{label}</Text>
+        <Text
+          numberOfLines={1}
+          allowFontScaling={false}
+          style={{ fontSize: 12, fontWeight: "700", color: "#fff", flexShrink: 1 }}
+        >
+          {label}
+        </Text>
       </View>
     );
   }
   return (
-    <View style={{ alignItems: "center", gap: 3, paddingTop: 4 }}>
+    <View style={{ alignItems: "center", gap: 3, paddingTop: 4, width: 64 }}>
       {icon}
-      <Text style={{ fontSize: 11, fontWeight: "500", color: INACTIVE }}>{label}</Text>
+      <Text
+        numberOfLines={1}
+        allowFontScaling={false}
+        style={{ fontSize: 11, fontWeight: "500", color: INACTIVE }}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
@@ -44,6 +57,8 @@ export default function TabsLayout() {
           paddingBottom: 14,
         },
         tabBarShowLabel: false,
+        tabBarItemStyle: { paddingHorizontal: 2 },
+        tabBarIconStyle: { width: "100%", alignItems: "center" },
       }}
     >
       <Tabs.Screen

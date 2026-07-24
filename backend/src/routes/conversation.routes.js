@@ -6,6 +6,7 @@ const {
   endConversation,
   listConversations,
   getConversation,
+  deleteConversation,
 } = require("../controllers/conversation.controller");
 const { requireAuth } = require("../middleware/auth.middleware");
 
@@ -19,6 +20,7 @@ router.post("/", startConversation);
 router.get("/:id", getConversation);
 router.post("/:id/respond", upload.single("audio"), respond);
 router.patch("/:id/end", endConversation);
+router.delete("/:id", deleteConversation);
 
 
 module.exports = router;

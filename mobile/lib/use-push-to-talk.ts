@@ -29,7 +29,14 @@ export function usePushToTalk(conversationId: number | null) {
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recorderState = useAudioRecorderState(audioRecorder);
 
-  const [phase, setPhase] = useState<TalkPhase>("idle");
+  const [phase, setPhaseState] = useState<TalkPhase>("idle");
+  const phaseRef = useRef<TalkPhase>("idle");
+
+  const setPhase = useCallback((newPhase: TalkPhase) => {
+    phaseRef.current = newPhase;
+    setPhaseState(newPhase);
+  }, []);
+
   const [lastAiText, setLastAiText] = useState<string | null>(null);
 
   // Historique accumulé pendant toute la session.
@@ -57,11 +64,15 @@ export function usePushToTalk(conversationId: number | null) {
     })();
   }, []);
 
-  const startRecording = useCallback(async () => {
-    if (!conversationId || phase !== "idle") return;
+  const startRecording = useCallback(async (id?: number) => {
+     const currentConversationId = id ?? conversationId;
+    if (!currentConversationId || phaseRef.current !== "idle") return;
     if (startingRef.current) return;
     startingRef.current = true;
     try {
+      // Repasse la session audio en mode "enregistrement" avant de démarrer :
+      // elle a pu être basculée en lecture seule après la réponse précédente.
+      await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: true });
       await audioRecorder.prepareToRecordAsync();
       audioRecorder.record();
       setPhase("recording");
@@ -74,7 +85,7 @@ export function usePushToTalk(conversationId: number | null) {
   }, [audioRecorder, conversationId, phase]);
 
   const stopRecordingAndRespond = useCallback(async () => {
-    if (!conversationId || phase !== "recording") return;
+    if (!conversationId || phaseRef.current  !== "recording") return;
     if (stoppingRef.current) return;
     stoppingRef.current = true;
     try {
@@ -100,6 +111,10 @@ export function usePushToTalk(conversationId: number | null) {
 
       setLastAiText(aiText);
       setPhase("speaking");
+
+      // Bascule la session audio en lecture seule avant de parler :
+      // évite les micro-coupures dues au partage de session avec l'enregistrement.
+      await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: false });
 
       Speech.speak(aiText, {
         language: "en-US",

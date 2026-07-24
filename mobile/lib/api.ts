@@ -89,33 +89,54 @@ export function startConversation() {
 // Envoie l'audio + tout l'historique des échanges précédents au backend.
 // Le backend transcrit l'audio, passe l'historique à Claude et renvoie
 // la réponse du coach ainsi que la transcription de ce que l'utilisateur a dit.
+//
+// L'upload audio est plus sensible aux petits accrocs Wi-Fi qu'une simple
+// requête JSON : on ajoute donc un timeout et une nouvelle tentative
+// automatique avant d'abandonner et de remonter l'erreur à l'utilisateur.
 export async function respondToAudio(
   conversationId: number,
   audioUri: string,
   history: HistoryEntry[]
 ) {
   const token = await getToken();
-  const formData = new FormData();
 
-  formData.append("audio", {
-    uri: audioUri,
-    name: "speech.m4a",
-    type: "audio/m4a",
-  } as unknown as Blob);
+  const attempt = async (): Promise<{ userText: string; aiText: string }> => {
+    const formData = new FormData();
+    formData.append("audio", {
+      uri: audioUri,
+      name: "speech.m4a",
+      type: "audio/m4a",
+    } as unknown as Blob);
+    formData.append("history", JSON.stringify(history));
 
-  // L'historique est sérialisé en JSON et joint à la requête multipart.
-  formData.append("history", JSON.stringify(history));
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
 
-  const res = await fetch(`${API_URL}/api/conversations/${conversationId}/respond`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-    body: formData,
-  });
+    try {
+      const res = await fetch(`${API_URL}/api/conversations/${conversationId}/respond`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+        signal: controller.signal,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new ApiError(data.message || "Erreur réponse IA.", res.status);
+      return data as { userText: string; aiText: string };
+    } finally {
+      clearTimeout(timeout);
+    }
+  };
 
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new ApiError(data.message || "Erreur réponse IA.", res.status);
-
-  return data as { userText: string; aiText: string };
+  try {
+    return await attempt();
+  } catch (err) {
+    // Une ApiError vient du serveur (erreur métier) : inutile de réessayer.
+    if (err instanceof ApiError) throw err;
+    // Sinon (coupure réseau, timeout...) : une seule nouvelle tentative.
+    console.warn("respondToAudio: échec réseau, nouvelle tentative...", err);
+    await new Promise((r) => setTimeout(r, 800));
+    return attempt();
+  }
 }
 
 // Termine la conversation et envoie le transcript complet pour que le
@@ -133,4 +154,10 @@ export function listConversations() {
 
 export function getConversation(conversationId: number) {
   return request<{ conversation: Conversation }>(`/conversations/${conversationId}`);
+}
+
+export function deleteConversation(conversationId: number) {
+  return request<{ success: boolean }>(`/conversations/${conversationId}`, {
+    method: "DELETE",
+  });
 }
