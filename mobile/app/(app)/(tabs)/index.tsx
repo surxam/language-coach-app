@@ -45,6 +45,7 @@ export default function PracticeScreen() {
 
   const {
     phase,
+    lastAiText,
     history,
     startRecording,
     stopRecordingAndRespond,
@@ -151,8 +152,9 @@ export default function PracticeScreen() {
             </Pressable>
           </View>
 
+          {/* Titre et sous-titre */} 
           <View style={{ flex: 1, alignItems: "center", paddingHorizontal: 14 }}>
-            <View style={{ alignItems: "center", marginTop: 78 }}>
+            <View style={{ alignItems: "center", marginTop: 50 }}>
               <Text style={{ color: TEXT, fontSize: 29, fontWeight: "800", letterSpacing: -0.7 }}>
                 {PHASE_LABEL[phase]}
               </Text>
@@ -161,7 +163,8 @@ export default function PracticeScreen() {
               </Text>
             </View>
 
-            <View style={{ alignItems: "center", marginTop: 40, marginBottom: 22 }}>
+             {/* Bouton rouge micro */} 
+            <View style={{ alignItems: "center", marginTop: 50, marginBottom: 15 }}>
               <View
               onStartShouldSetResponder={() => true}
                 onResponderGrant={onPressIn}
@@ -190,47 +193,32 @@ export default function PracticeScreen() {
               </View>
             </View>
 
-            <View style={{ flex: 1 }} />
-
+            {/* sous titre de la réponse ia */}
             <View
               style={{
                 width: "100%",
-                borderRadius: 18,
-                backgroundColor: "#FAF8F9",
-                padding: 16,
-                shadowColor: "#6D6570",
-                shadowOpacity: 0.06,
-                shadowRadius: 14,
-                shadowOffset: { width: 0, height: 4 },
-                elevation: 2,
+                minHeight: 90,
+                marginTop: 24,
+                paddingHorizontal: 20,
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <View
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 10,
-                    backgroundColor: "#64F1C3",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginRight: 16,
-                  }}
-                >
-                  <Award size={23} color="#252329" strokeWidth={2.4} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                    <Text style={{ color: TEXT, fontSize: 17, fontWeight: "500" }}>Progression quotidienne</Text>
-                    <Text style={{ color: BRAND, fontSize: 17, fontWeight: "600" }}>{progress}%</Text>
-                  </View>
-                  <View style={{ height: 8, marginTop: 8, backgroundColor: "#E5E1E5", borderRadius: 999, overflow: "hidden" }}>
-                    <View style={{ width: `${progress}%`, height: "100%", borderRadius: 999, backgroundColor: BRAND }} />
-                  </View>
-                </View>
-              </View>
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: phase === "thinking" ? MUTED : TEXT,
+                  textAlign: "center",
+                  lineHeight: 28,
+                }}
+              >
+                {phase === "thinking"
+                  ? "En Attente..."
+                  : lastAiText ?? "La réponse de votre coach apparaîtra ici."}
+              </Text>
             </View>
-
+              
+            {/* bouton finaliser*/}
             <Pressable
               onPress={onStop}
               disabled={ending}

@@ -89,16 +89,9 @@ export default function ReviewScreen() {
             }}>
               <Check size={40} color="#fff" strokeWidth={3} />
             </View>
-            <View style={{
-              backgroundColor: "#DCFCE7", borderRadius: 20,
-              paddingHorizontal: 14, paddingVertical: 5, marginBottom: 14,
-            }}>
-              <Text style={{ color: SUCCESS, fontSize: 12, fontWeight: "700" }}>
-                Niveau B2 atteint !
-              </Text>
-            </View>
+      
             <Text style={{ color: TEXT, fontSize: 25, fontWeight: "800", textAlign: "center" }}>
-              Beaux travail !
+              Discussion Terminée !
             </Text>
             <Text style={{ color: MUTED, fontSize: 14, textAlign: "center", marginTop: 8,
               lineHeight: 20, paddingHorizontal: 6 }}>

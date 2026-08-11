@@ -4,8 +4,8 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
-  ChevronLeft, UtensilsCrossed, Clock, Check, AlertCircle, BookOpen, Volume2,
-  Calendar, Mic, History,
+  ChevronLeft, UtensilsCrossed, Clock, CheckCircle2, AlertCircle, BookOpen, Volume2,
+  Calendar, Mic, History,AlertTriangle,XCircle,
 } from "lucide-react-native";
 import * as api from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
@@ -17,6 +17,7 @@ const BRAND   = "#5B55F6";
 const TEXT    = "#1E1B22";
 const MUTED   = "#8A8690";
 const SUCCESS = "#22C55E";
+const WARNING = "#F97316";
 const ERR_RED = "#EF4444";
 const ERR_BG  = "#F8FAFC";
 const INACTIVE = "#94A3B8";
@@ -98,6 +99,30 @@ export default function ConversationDetailScreen() {
     else router.replace("/history");
   };
 
+  //gestion des couleurs en fonction de la note
+    const getScoreColor = (score: number) => {
+    if (score < 4) return ERR_RED;
+    if (score < 7) return WARNING;
+    return SUCCESS;
+  };
+
+  //gestion des icones en fonction de la note
+  const ScoreIcon = ({ score }: { score: number }) => {
+  const color = getScoreColor(score);
+
+  if (score < 4) {
+    return <XCircle size={13} color={color} strokeWidth={2.5} />;
+  }
+
+  if (score < 7) {
+    return <AlertTriangle size={13} color={color} strokeWidth={2.5} />;
+  }
+   return <CheckCircle2 size={13} color={color} strokeWidth={2.5} />;
+  
+};
+
+
+
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
       <StatusBar barStyle="dark-content" backgroundColor={BG} />
@@ -174,10 +199,10 @@ export default function ConversationDetailScreen() {
                 <View>
                   <Text style={{ color: MUTED, fontSize: 11 }}>Score{"\n"}Prononciation</Text>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 3 }}>
-                    <Check size={13} color={SUCCESS} strokeWidth={3} />
-                    <Text style={{ color: SUCCESS, fontSize: 14, fontWeight: "700" }}>
-                      {cor.score.toFixed(1)}/10
-                    </Text>
+                    <ScoreIcon score={cor.score} />
+                      <Text style={{color: getScoreColor(cor.score),fontSize: 14, fontWeight: "700",}}>
+                        {cor.score.toFixed(1)}/10
+                      </Text>
                   </View>
                 </View>
               </View>

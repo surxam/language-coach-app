@@ -17,7 +17,7 @@ export type TalkPhase = "idle" | "recording" | "thinking" | "speaking";
 //
 // Cycle complet d'une interaction :
 //   appui maintenu  → enregistrement micro  (expo-audio)
-//   relâchement     → transcription + réponse Claude via backend
+//   relâchement     → transcription + réponse Groq via backend
 //   réponse reçue   → lecture TTS (expo-speech)
 //
 // Garde en mémoire l'historique complet des échanges de la session
