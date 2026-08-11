@@ -1,47 +1,10 @@
 import { Tabs } from "expo-router";
-import { View, Text } from "react-native";
 import { Mic, BookOpen, History } from "lucide-react-native";
+import { TabIcon } from "@/components/tab-icon";
 
 const TAB_BAR_BG = "#FFFFFF";
-const ACTIVE_COL = "#6366F1";
 const INACTIVE   = "#94A3B8";
 const BORDER_COL = "#EEF2F6";
-
-function TabIcon({ icon, activeIcon, label, focused }: {
-  icon: React.ReactNode; activeIcon: React.ReactNode; label: string; focused: boolean;
-}) {
-  if (focused) {
-    return (
-      <View style={{
-        flexDirection: "row", alignItems: "center", gap: 6,
-        backgroundColor: ACTIVE_COL, borderRadius: 22,
-        paddingHorizontal: 14, paddingVertical: 10,
-        maxWidth: 120,
-      }}>
-        {activeIcon}
-        <Text
-          numberOfLines={1}
-          allowFontScaling={false}
-          style={{ fontSize: 12, fontWeight: "700", color: "#fff", flexShrink: 1 }}
-        >
-          {label}
-        </Text>
-      </View>
-    );
-  }
-  return (
-    <View style={{ alignItems: "center", gap: 3, paddingTop: 4, width: 64 }}>
-      {icon}
-      <Text
-        numberOfLines={1}
-        allowFontScaling={false}
-        style={{ fontSize: 11, fontWeight: "500", color: INACTIVE }}
-      >
-        {label}
-      </Text>
-    </View>
-  );
-}
 
 export default function TabsLayout() {
   return (

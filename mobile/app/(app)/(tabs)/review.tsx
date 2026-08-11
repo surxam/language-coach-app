@@ -1,14 +1,14 @@
 import { useCallback, useState } from "react";
 import {
   View, Text, ScrollView, ActivityIndicator, Pressable,
-  SafeAreaView, StatusBar,
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import * as api from "@/lib/api";
-import { useAuth } from "@/lib/auth-context";
 import { ProfileMenu } from "@/components/profile-menu";
+import { Screen } from "@/components/screen";
+import { AppHeader } from "@/components/header";
 import {
-  UtensilsCrossed, Clock, Check, AlertCircle, Volume2, Menu,
+  UtensilsCrossed, Clock, Check, AlertCircle, Volume2,
 } from "lucide-react-native";
 
 const BG      = "#F8F5F7";
@@ -23,7 +23,6 @@ const ERR_BG  = "#F8FAFC";
 
 export default function ReviewScreen() {
   const router = useRouter();
-  const { user } = useAuth();
   const [conv, setConv] = useState<api.Conversation | null>(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -42,42 +41,18 @@ export default function ReviewScreen() {
   const cor = conv?.correction;
   const fb = cor?.feedback;
   const score = cor?.score ?? null;
-  const initials = (user?.name || "U")
-    .split(" ")
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: BG, alignItems: "center", justifyContent: "center" }}>
-        <StatusBar barStyle="dark-content" backgroundColor={BG} />
+      <Screen backgroundColor={BG} contentStyle={{ alignItems: "center", justifyContent: "center" }}>
         <ActivityIndicator size="large" color={BRAND} />
-      </View>
+      </Screen>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar barStyle="dark-content" backgroundColor={BG} />
-      <SafeAreaView style={{ flex: 1 }}>
-        <View style={{
-          flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-          paddingHorizontal: 20, paddingTop: 54, paddingBottom: 6,
-        }}>
-          <Pressable hitSlop={10} onPress={() => setMenuOpen(true)}><Menu size={23} color={TEXT} strokeWidth={2.4} /></Pressable>
-          <Text style={{ color: BRAND, fontSize: 21, fontWeight: "800", letterSpacing: -0.4 }}>
-            LinguistFlow
-          </Text>
-          <Pressable onPress={() => setMenuOpen(true)} style={{
-            width: 38, height: 38, borderRadius: 19,
-            backgroundColor: "#EEF2FF", borderWidth: 2, borderColor: BRAND,
-            alignItems: "center", justifyContent: "center",
-          }}>
-            <Text style={{ color: BRAND, fontSize: 13, fontWeight: "800" }}>{initials}</Text>
-          </Pressable>
-        </View>
+    <Screen backgroundColor={BG}>
+        <AppHeader onMenuPress={() => setMenuOpen(true)} />
 
         <ScrollView contentContainerStyle={{ padding: 22, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
           <View style={{ alignItems: "center", marginTop: 8 }}>
@@ -206,8 +181,7 @@ export default function ReviewScreen() {
         </ScrollView>
 
         <ProfileMenu visible={menuOpen} onClose={() => setMenuOpen(false)} />
-      </SafeAreaView>
-    </View>
+    </Screen>
   );
 }
 

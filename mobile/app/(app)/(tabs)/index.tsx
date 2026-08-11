@@ -1,18 +1,12 @@
 import { useCallback, useRef, useState } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  Alert,
-  SafeAreaView,
-  StatusBar,
-} from "react-native";
+import { View, Text, Pressable, Alert } from "react-native";
 import { useRouter } from "expo-router";
-import { Mic, StopCircle, Menu, Award } from "lucide-react-native";
+import { Mic, StopCircle } from "lucide-react-native";
 import * as api from "@/lib/api";
 import { usePushToTalk } from "@/lib/use-push-to-talk";
-import { useAuth } from "@/lib/auth-context";
 import { ProfileMenu } from "@/components/profile-menu";
+import { Screen } from "@/components/screen";
+import { AppHeader } from "@/components/header";
 
 const BG = "#FDF9FC";
 const BRAND = "#5B55F6";
@@ -36,7 +30,6 @@ const PHASE_SUB: Record<string, string> = {
 
 export default function PracticeScreen() {
   const router = useRouter();
-  const { user } = useAuth();
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [ending, setEnding] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -104,55 +97,15 @@ export default function PracticeScreen() {
     }
   };
 
-  const initials = (user?.name || "U")
-    .split(" ")
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
   const isRecording = phase === "recording";
   const isBusy = phase === "thinking";
 
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar barStyle="dark-content" backgroundColor={BG} />
-      <SafeAreaView style={{ flex: 1, paddingBottom: 18 }}>
-        <View style={{ flex: 1, justifyContent: "space-between" }}>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              paddingHorizontal: 24,
-              paddingTop: 54,
-            }}
-          >
-            <Pressable hitSlop={10} onPress={() => setMenuOpen(true)}>
-              <Menu size={23} color={TEXT} strokeWidth={2.8} />
-            </Pressable>
+    <Screen backgroundColor={BG} contentStyle={{ paddingBottom: 18 }}>
+      <View style={{ flex: 1, justifyContent: "space-between" }}>
+        <AppHeader size="large" onMenuPress={() => setMenuOpen(true)} />
 
-            <Text style={{ color: BRAND, fontSize: 28, fontWeight: "800", letterSpacing: -1 }}>
-              LinguistFlow
-            </Text>
-
-            <Pressable
-              onPress={() => setMenuOpen(true)}
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: "#D9D4CF",
-                borderWidth: 2,
-                borderColor: "#262329",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text style={{ color: "#262329", fontSize: 13, fontWeight: "800" }}>{initials}</Text>
-            </Pressable>
-          </View>
-
-          {/* Titre et sous-titre */} 
+        {/* Titre et sous-titre */} 
           <View style={{ flex: 1, alignItems: "center", paddingHorizontal: 14 }}>
             <View style={{ alignItems: "center", marginTop: 50 }}>
               <Text style={{ color: TEXT, fontSize: 29, fontWeight: "800", letterSpacing: -0.7 }}>
@@ -204,14 +157,15 @@ export default function PracticeScreen() {
                 justifyContent: "center",
               }}
             >
-              <Text
-                style={{
-                  fontSize: 18,
-                  color: phase === "thinking" ? MUTED : TEXT,
-                  textAlign: "center",
-                  lineHeight: 28,
-                }}
-              >
+             <Text
+              style={{
+                fontSize: 15,
+                fontWeight: "600",
+                color: phase === "thinking" ? MUTED : TEXT,
+                textAlign: "center",
+                lineHeight: 22,
+              }}
+            >
                 {phase === "thinking"
                   ? "En Attente..."
                   : lastAiText ?? "La réponse de votre coach apparaîtra ici."}
@@ -245,8 +199,7 @@ export default function PracticeScreen() {
           </View>
         </View>
 
-        <ProfileMenu visible={menuOpen} onClose={() => setMenuOpen(false)} />
-      </SafeAreaView>
-    </View>
+      <ProfileMenu visible={menuOpen} onClose={() => setMenuOpen(false)} />
+    </Screen>
   );
 }

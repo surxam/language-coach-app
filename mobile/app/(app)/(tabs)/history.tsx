@@ -1,15 +1,15 @@
 import { useCallback, useState } from "react";
 import {
-  View, Text, ScrollView, Pressable, Alert,
-  ActivityIndicator, SafeAreaView, StatusBar,
+  View, Text, ScrollView, Pressable, Alert, ActivityIndicator,
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import {
-  Trash2, UtensilsCrossed, Plane, Briefcase, HeartPulse, Clock, Menu,
+  Trash2, UtensilsCrossed, Plane, Briefcase, HeartPulse, Clock,
 } from "lucide-react-native";
 import * as api from "@/lib/api";
-import { useAuth } from "@/lib/auth-context";
 import { ProfileMenu } from "@/components/profile-menu";
+import { Screen } from "@/components/screen";
+import { AppHeader } from "@/components/header";
 
 const BG      = "#F8F5F7";
 const CARD    = "#FFFFFF";
@@ -53,7 +53,6 @@ function dayLabel(iso: string) {
 
 export default function HistoryScreen() {
   const router = useRouter();
-  const { user } = useAuth();
   const [conversations, setConversations] = useState<api.Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -110,31 +109,9 @@ export default function HistoryScreen() {
     if (grp) grp.items.push(conv); else groups.push({ label: lbl, items: [conv] });
   });
 
-  const initials = (user?.name || "U").split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase();
-
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar barStyle="dark-content" backgroundColor={BG} />
-      <SafeAreaView style={{ flex: 1 }}>
-        {/* Header : identique à index.tsx (menu à gauche, logo au centre, avatar à droite) */}
-        <View style={{
-          flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-          paddingHorizontal: 20, paddingTop: 54, paddingBottom: 6,
-        }}>
-          <Pressable hitSlop={10} onPress={() => setMenuOpen(true)}>
-            <Menu size={23} color={TEXT} strokeWidth={2.4} />
-          </Pressable>
-          <Text style={{ color: BRAND, fontSize: 21, fontWeight: "800", letterSpacing: -0.4 }}>
-            LinguistFlow
-          </Text>
-          <Pressable onPress={() => setMenuOpen(true)} style={{
-            width: 38, height: 38, borderRadius: 19,
-            backgroundColor: "#EEF2FF", borderWidth: 2, borderColor: BRAND,
-            alignItems: "center", justifyContent: "center",
-          }}>
-            <Text style={{ color: BRAND, fontSize: 13, fontWeight: "800" }}>{initials}</Text>
-          </Pressable>
-        </View>
+    <Screen backgroundColor={BG}>
+        <AppHeader onMenuPress={() => setMenuOpen(true)} />
 
         {/* Titre */}
         <View style={{ paddingHorizontal: 20, paddingTop: 14, paddingBottom: 16 }}>
@@ -258,7 +235,6 @@ export default function HistoryScreen() {
         )}
 
         <ProfileMenu visible={menuOpen} onClose={() => setMenuOpen(false)} />
-      </SafeAreaView>
-    </View>
+    </Screen>
   );
 }

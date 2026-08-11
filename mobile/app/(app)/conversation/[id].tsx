@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
 import {
-  View, Text, Pressable, ScrollView, SafeAreaView, StatusBar, ActivityIndicator,
+  View, Text, Pressable, ScrollView, ActivityIndicator,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ChevronLeft, UtensilsCrossed, Clock, CheckCircle2, AlertCircle, BookOpen, Volume2,
-  Calendar, Mic, History,AlertTriangle,XCircle,
+  Calendar, AlertTriangle, XCircle,
 } from "lucide-react-native";
 import * as api from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { ProfileMenu } from "@/components/profile-menu";
+import { Screen } from "@/components/screen";
+import { AppHeader } from "@/components/header";
+import { BottomNav } from "@/components/bottom-nav";
 
 const BG      = "#F8F5F7";
 const CARD    = "#FFFFFF";
@@ -20,36 +23,6 @@ const SUCCESS = "#22C55E";
 const WARNING = "#F97316";
 const ERR_RED = "#EF4444";
 const ERR_BG  = "#F8FAFC";
-const INACTIVE = "#94A3B8";
-const NAV_BORDER = "#EEF2F6";
-
-function NavItem({ icon, label, active, onPress }: {
-  icon: React.ReactNode; label: string; active: boolean; onPress: () => void;
-}) {
-  if (active) {
-    return (
-      <Pressable onPress={onPress} style={{
-        flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
-        backgroundColor: BRAND, borderRadius: 22, marginHorizontal: 6, paddingVertical: 10,
-      }}>
-        {icon}
-        <Text numberOfLines={1} allowFontScaling={false}
-          style={{ fontSize: 12, fontWeight: "700", color: "#fff", flexShrink: 1 }}>
-          {label}
-        </Text>
-      </Pressable>
-    );
-  }
-  return (
-    <Pressable onPress={onPress} style={{ flex: 1, alignItems: "center", gap: 3, paddingTop: 4 }}>
-      {icon}
-      <Text numberOfLines={1} allowFontScaling={false}
-        style={{ fontSize: 11, fontWeight: "500", color: INACTIVE }}>
-        {label}
-      </Text>
-    </Pressable>
-  );
-}
 
 function dayLabel(iso: string) {
   const d = new Date(iso);
@@ -89,7 +62,6 @@ export default function ConversationDetailScreen() {
   const cor = conv?.correction;
   const fb  = cor?.feedback;
   const pct = cor ? Math.round(cor.score * 10) : 0;
-  const initials = (user?.name || "U").split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase();
   const firstName = (user?.name || "").split(" ")[0] || "Alex";
 
   // Retour garanti vers l'onglet Historique, même si la pile de navigation
@@ -124,28 +96,13 @@ export default function ConversationDetailScreen() {
 
 
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar barStyle="dark-content" backgroundColor={BG} />
-      <SafeAreaView style={{ flex: 1 }}>
-        {/* Header : flèche retour (garantie vers Historique) + avatar */}
-        <View style={{
-          flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-          paddingHorizontal: 20, paddingTop: 54, paddingBottom: 6,
-        }}>
-          <Pressable hitSlop={10} onPress={goBack}>
-            <ChevronLeft size={26} color={TEXT} strokeWidth={2.4} />
-          </Pressable>
-          <Text style={{ color: BRAND, fontSize: 21, fontWeight: "800", letterSpacing: -0.4 }}>
-            LinguistFlow
-          </Text>
-          <Pressable onPress={() => setMenuOpen(true)} style={{
-            width: 38, height: 38, borderRadius: 19,
-            backgroundColor: "#EEF2FF", borderWidth: 2, borderColor: BRAND,
-            alignItems: "center", justifyContent: "center",
-          }}>
-            <Text style={{ color: BRAND, fontSize: 13, fontWeight: "800" }}>{initials}</Text>
-          </Pressable>
-        </View>
+    <Screen backgroundColor={BG}>
+        {/* Header : flèche retour inchangée (goBack) + avatar, via le composant partagé AppHeader */}
+        <AppHeader
+          onMenuPress={() => setMenuOpen(true)}
+          leftIcon={<ChevronLeft size={26} color={TEXT} strokeWidth={2.4} />}
+          onLeftPress={goBack}
+        />
 
         {loading ? (
           <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
@@ -277,31 +234,10 @@ export default function ConversationDetailScreen() {
           </ScrollView>
         )}
 
-        {/* Barre de navigation basse (History actif) */}
-        <View style={{
-          flexDirection: "row", alignItems: "center", justifyContent: "space-around",
-          backgroundColor: CARD, borderTopWidth: 1, borderTopColor: NAV_BORDER,
-          height: 78, paddingTop: 12, paddingBottom: 14,
-        }}>
-          <NavItem
-            label="Practice" active={false}
-            icon={<Mic size={20} color={INACTIVE} />}
-            onPress={() => router.replace("/")}
-          />
-          <NavItem
-            label="Review" active={false}
-            icon={<BookOpen size={20} color={INACTIVE} />}
-            onPress={() => router.replace("/review")}
-          />
-          <NavItem
-            label="History" active={true}
-            icon={<History size={18} color="#fff" />}
-            onPress={() => router.replace("/history")}
-          />
-        </View>
+        {/* Barre de navigation basse (History actif), composant partagé BottomNav */}
+        <BottomNav active="history" />
 
         <ProfileMenu visible={menuOpen} onClose={() => setMenuOpen(false)} />
-      </SafeAreaView>
-    </View>
+    </Screen>
   );
 }
