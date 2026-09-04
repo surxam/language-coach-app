@@ -4,11 +4,12 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
-  ChevronLeft, UtensilsCrossed, Clock, CheckCircle2, AlertCircle, BookOpen, Volume2,
+  ChevronLeft, Clock, CheckCircle2, AlertCircle, BookOpen, Volume2,
   Calendar, AlertTriangle, XCircle,
 } from "lucide-react-native";
 import * as api from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { getThemeStyle } from "@/lib/theme-icon";
 import { ProfileMenu } from "@/components/profile-menu";
 import { Screen } from "@/components/screen";
 import { AppHeader } from "@/components/header";
@@ -63,6 +64,7 @@ export default function ConversationDetailScreen() {
   const fb  = cor?.feedback;
   const pct = cor ? Math.round(cor.score * 10) : 0;
   const firstName = (user?.name || "").split(" ")[0] || "Alex";
+  const themeStyle = getThemeStyle(fb?.theme ?? "");
 
   // Retour garanti vers l'onglet Historique, même si la pile de navigation
   // ne contient pas d'écran précédent (ex : ouverture via un lien direct).
@@ -134,13 +136,13 @@ export default function ConversationDetailScreen() {
               shadowColor: "#0F172A", shadowOpacity: 0.05, shadowRadius: 10,
               shadowOffset: { width: 0, height: 4 }, marginBottom: 14 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                <View style={{ width: 36, height: 36, borderRadius: 9, backgroundColor: "#EEF2FF",
+                <View style={{ width: 36, height: 36, borderRadius: 9, backgroundColor: themeStyle.bg,
                   alignItems: "center", justifyContent: "center" }}>
-                  <UtensilsCrossed size={17} color={BRAND} />
+                  <themeStyle.Icon size={17} color={themeStyle.color} />
                 </View>
                 <View>
                   <Text style={{ color: MUTED, fontSize: 11 }}>Thème de la session</Text>
-                  <Text style={{ color: TEXT, fontSize: 17, fontWeight: "700" }}>Le {fb.theme}</Text>
+                  <Text style={{ color: TEXT, fontSize: 17, fontWeight: "700" }}>{fb.theme}</Text>
                 </View>
               </View>
               <View style={{ flexDirection: "row", gap: 40 }}>

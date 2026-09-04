@@ -3,8 +3,8 @@
 //
 // Utilise GROQ (gratuit) pour :
 //   - Transcription audio : Whisper via Groq
-//   - Dialogue coach IA   : Llama 3.3 70B via Groq
-//   - Analyse de fin      : Llama 3.3 70B via Groq
+//   - Dialogue coach IA   : GPT OSS 120B via Groq
+//   - Analyse de fin      : GPT OSS 120B via Groq
 //
 // Variable d'env requise dans backend/.env :
 //   GROQ_API_KEY  → https://console.groq.com (gratuit, sans CB)
@@ -13,10 +13,11 @@
 // ============================================================
 
 const GROQ_BASE = "https://api.groq.com/openai/v1";
+const CHAT_MODEL = "openai/gpt-oss-120b";
 
 // ─── Appel LLM (chat completion OpenAI-compatible) ───────────
 
-async function callGroq(system, messages, model = "llama-3.3-70b-versatile", maxTokens = 600) {
+async function callGroq(system, messages, model = CHAT_MODEL, maxTokens = 600) {
   const key = process.env.GROQ_API_KEY;
   if (!key) {
     throw new Error("GROQ_API_KEY absente du fichier backend/.env");
@@ -112,16 +113,16 @@ STRICT RULES — apply at every single turn without exception:
    (French, Spanish, Arabic, etc.), do NOT answer in that language.
    Respond only in English and politely ask them to switch:
    "I'm sorry, but we can only practice English together.
-    Could you please say that again in English?"
+    Could you please say that again in English ?"
 
 2. CORRECT ERRORS NATURALLY. If the user makes a grammar or vocabulary mistake,
    briefly acknowledge it and model the correct form before continuing.
    Example — user says "I have went there":
    → "Quick note: it's 'I went there' — simple past, no 'have' needed.
-      Anyway, tell me more!"
+      Anyway, tell me more !"
 
 3. ASK TO REPEAT when the input is "__UNCLEAR__" or "__MOCK_STT__":
-   "Sorry, I didn't quite catch that. Could you repeat a little more clearly?"
+   "Sorry, I didn't quite catch that. Could you repeat a little more clearly ?"
 
 4. TOPIC FREEDOM. Follow the student's lead on any subject
    (travel, food, work, movies, sports, daily life…).
@@ -136,7 +137,7 @@ async function getAIReply(userText, history = []) {
   ];
 
   try {
-    return await callGroq(COACH_SYSTEM, messages, "llama-3.3-70b-versatile", 300);
+    return await callGroq(COACH_SYSTEM, messages, CHAT_MODEL, 300);
   } catch (err) {
     console.error("getAIReply error:", err.message);
     throw err; // remonté au contrôleur qui applique le fallback
@@ -188,7 +189,7 @@ async function generateCorrection(transcript = []) {
     const raw = await callGroq(
       CORRECTION_SYSTEM,
       [{ role: "user", content: text }],
-      "llama-3.3-70b-versatile",
+      CHAT_MODEL,
       600
     );
 

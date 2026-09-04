@@ -1,4 +1,5 @@
-import { Modal, View, Text, Pressable, Image } from "react-native";
+import { Modal, View, Text, Pressable, Image, Platform } from "react-native";
+import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
 import { Award, Bookmark, LogOut } from "lucide-react-native";
 import { useAuth } from "@/lib/auth-context";
@@ -22,67 +23,81 @@ export function ProfileMenu({ visible, onClose }: { visible: boolean; onClose: (
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable
-        style={{ flex: 1, flexDirection: "row", backgroundColor: "rgba(20,18,24,0.4)" }}
+        style={{ flex: 1, flexDirection: "row" }}
         onPress={onClose}
       >
+        {Platform.OS === "web" ? (
+          // Sur web, expo-blur ne fonctionne pas : on utilise le flou CSS natif du navigateur.
+          <View
+            style={{
+              position: "absolute",
+              top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: "rgba(20,18,24,0.25)",
+              // @ts-ignore - propriétés CSS web transmises telles quelles par react-native-web
+              backdropFilter: "blur(12px)",
+              
+            }}
+          />
+        ) : (
+          <BlurView
+            intensity={20}
+            tint="dark"
+            experimentalBlurMethod="dimezisBlurView"
+            style={{
+              position: "absolute",
+              top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: "rgba(20,18,24,0.1)",
+            }}
+          />
+        )}
         <Pressable
           onPress={(e) => e.stopPropagation()}
           style={{
             width: "68%", backgroundColor: "#FCFAFB",
-            paddingTop: 56, paddingHorizontal: 20, paddingBottom: 32,
+            paddingTop: 30, paddingHorizontal: 40, paddingBottom: 32,
           }}
         >
           {/* Ligne profil : avatar + nom/niveau/streak */}
-          <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10, marginBottom: 30 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom:45 }}>
             <View style={{
               width: 44, height: 44, borderRadius: 22,
               backgroundColor: "#EEF2FF", alignItems: "center", justifyContent: "center",
               borderWidth: 2, borderColor: BRAND,
             }}>
-              <Text style={{ color: BRAND, fontSize: 15, fontWeight: "800" }}>{initials}</Text>
+              <Text style={{ color: BRAND, fontSize: 17, fontWeight: "800" }}>{initials}</Text>
             </View>
             <View style={{ flexShrink: 1 }}>
-              <Text style={{ color: TEXT, fontSize: 15, fontWeight: "800" }}>
+              <Text style={{ color: TEXT, fontSize: 17, fontWeight: "800" }}>
                 {user?.name || "Utilisateur"}
               </Text>
-              <Text style={{ color: MUTED, fontSize: 13, marginTop: 1 }}>
-                B2 - Upper Intermediate
-              </Text>
-              <View style={{
-                alignSelf: "flex-start", marginTop: 6,
-                backgroundColor: "#DCFCE7", borderRadius: 20,
-                paddingHorizontal: 10, paddingVertical: 3,
-              }}>
-                <Text style={{ color: SUCCESS, fontSize: 11, fontWeight: "700" }}>
-                  12 Day Streak
-                </Text>
-              </View>
+              
+              
             </View>
           </View>
           {/* Navigation */}
-          <View style={{ gap: 22 }}>
+          <View style={{ gap: 30 }}>
             <Pressable onPress={() => go("/")}
               style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
             >
-              <Award size={19} color={TEXT} strokeWidth={1.8} />
-              <Text style={{ color: TEXT, fontSize: 15, fontWeight: "500" }}>Pratique</Text>
+              <Award size={24} color={TEXT} strokeWidth={1.8} />
+              <Text style={{ color: TEXT, fontSize: 20, fontWeight: "500" }}>Pratique</Text>
             </Pressable>
 
             <Pressable onPress={() => go("/history")}
               style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
             >
-              <Bookmark size={19} color={TEXT} strokeWidth={1.8} />
-              <Text style={{ color: TEXT, fontSize: 15, fontWeight: "500" }}>Historique</Text>
+              <Bookmark size={24} color={TEXT} strokeWidth={1.8} />
+              <Text style={{ color: TEXT, fontSize: 20, fontWeight: "500" }}>Historique</Text>
             </Pressable>
           </View>
 
           {/* Déconnexion */}
           <View style={{ flex: 1, justifyContent: "flex-end" }}>
             <Pressable onPress={onLogout}
-              style={{ flexDirection: "row", alignItems: "center", gap: 9 }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 14 }}
             >
-              <LogOut size={17} color={RED} strokeWidth={1.8} />
-              <Text style={{ color: RED, fontSize: 14, fontWeight: "500" }}>Deconnexion</Text>
+              <LogOut size={20} color={RED} strokeWidth={2.5} />
+              <Text style={{ color: RED, fontSize: 19, fontWeight: "500" }}>Deconnexion</Text>
             </Pressable>
           </View>
         </Pressable>

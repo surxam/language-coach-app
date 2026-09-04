@@ -1,7 +1,6 @@
 import { View, Text, Pressable, ActivityIndicator } from "react-native";
-import {
-  Trash2, UtensilsCrossed, Plane, Briefcase, HeartPulse, Clock,
-} from "lucide-react-native";
+import { Trash2, Clock } from "lucide-react-native";
+import { getThemeStyle } from "@/lib/theme-icon";
 import type * as api from "@/lib/api";
 
 const CARD  = "#FFFFFF";
@@ -13,19 +12,6 @@ const RED   = "#EF4444";
 
 function scoreColor(score: number) {
   return score >= 8.7 ? GREEN : BRAND;
-}
-
-function themeStyle(theme: string) {
-  const t = theme.toLowerCase();
-  if (t.includes("restaurant") || t.includes("food"))
-    return { bg: "#4ADE80", icon: <UtensilsCrossed size={17} color="#fff" /> };
-  if (t.includes("travel") || t.includes("voyage"))
-    return { bg: "#5B55F6", icon: <Plane size={17} color="#fff" /> };
-  if (t.includes("work") || t.includes("travail"))
-    return { bg: "#1E1B22", icon: <Briefcase size={17} color="#fff" /> };
-  if (t.includes("health") || t.includes("santé"))
-    return { bg: "#F87171", icon: <HeartPulse size={17} color="#fff" /> };
-  return { bg: "#4ADE80", icon: <UtensilsCrossed size={17} color="#fff" /> };
 }
 
 function formatTime(iso: string) {
@@ -45,7 +31,7 @@ type ConversationCardProps = {
 export function ConversationCard({ conversation, onPress, onDelete, deleting = false }: ConversationCardProps) {
   const score = conversation.correction?.score ?? 0;
   const theme = conversation.correction?.feedback?.theme ?? "Session";
-  const ts = themeStyle(theme);
+  const ts = getThemeStyle(theme);
 
   return (
     <Pressable
@@ -61,7 +47,7 @@ export function ConversationCard({ conversation, onPress, onDelete, deleting = f
         width: 40, height: 40, borderRadius: 12, backgroundColor: ts.bg,
         alignItems: "center", justifyContent: "center", marginRight: 14,
       }}>
-        {ts.icon}
+        <ts.Icon size={19} color={ts.color} />
       </View>
 
       <View style={{ flex: 1 }}>

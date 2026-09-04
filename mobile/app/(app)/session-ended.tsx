@@ -9,6 +9,7 @@ import {
 } from "lucide-react-native";
 import * as api from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { fluencyMessage } from "@/lib/theme-icon";
 import { ProfileMenu } from "@/components/profile-menu";
 
 const BG      = "#F8F5F7";
@@ -129,8 +130,7 @@ export default function SessionEndedScreen() {
             </Text>
             <Text style={{ color: MUTED, fontSize: 14, textAlign: "center", marginTop: 8,
               lineHeight: 20, paddingHorizontal: 6 }}>
-              Votre discussion sur le thème "{fb?.theme ?? "Session"}" est terminée. Vous avez
-              fait preuve d'une excellente fluidité.
+              Votre discussion sur le thème "{fb?.theme ?? "Session"}" est terminée. {fluencyMessage(score)}
             </Text>
           </View>
 

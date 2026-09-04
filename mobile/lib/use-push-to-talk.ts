@@ -47,6 +47,12 @@ export function usePushToTalk(conversationId: number | null) {
   // onPressOut deux fois avant que le state React n'ait été mis à jour).
   const stoppingRef = useRef(false);
   const startingRef = useRef(false);
+  // Horodatage du démarrage effectif de l'enregistrement : sert à garantir
+  // une durée minimale avant d'appeler stop() (sur Android, MediaRecorder.stop()
+  // lève une RuntimeException si trop peu de données ont été capturées, ce qui
+  // arrive typiquement lors d'un tap très rapide sur le bouton micro).
+  const recordingStartedAtRef = useRef<number | null>(null);
+  const MIN_RECORDING_MS = 400;
 
   // Demande d'accès micro une seule fois au montage.
   useEffect(() => {
@@ -75,6 +81,7 @@ export function usePushToTalk(conversationId: number | null) {
       await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: true });
       await audioRecorder.prepareToRecordAsync();
       audioRecorder.record();
+      recordingStartedAtRef.current = Date.now();
       setPhase("recording");
     } catch (err) {
       console.error("startRecording error:", err);
@@ -89,8 +96,30 @@ export function usePushToTalk(conversationId: number | null) {
     if (stoppingRef.current) return;
     stoppingRef.current = true;
     try {
-      await audioRecorder.stop();
-      const uri = audioRecorder.uri;
+      // Garantit une durée minimale d'enregistrement avant d'appeler stop().
+      // Sans ça, un tap très rapide fait planter MediaRecorder.stop() côté
+      // Android (RuntimeException "stop failed" car aucune donnée capturée).
+      const elapsed = recordingStartedAtRef.current
+        ? Date.now() - recordingStartedAtRef.current
+        : MIN_RECORDING_MS;
+      if (elapsed < MIN_RECORDING_MS) {
+        await new Promise((resolve) => setTimeout(resolve, MIN_RECORDING_MS - elapsed));
+      }
+
+      let uri: string | null = null;
+      try {
+        await audioRecorder.stop();
+        uri = audioRecorder.uri;
+      } catch (stopErr) {
+        // Le RuntimeException Android "stop failed" survient quand
+        // l'enregistrement était trop court pour contenir des données
+        // exploitables. On traite ce cas comme "rien à envoyer" plutôt
+        // que de remonter une erreur générique à l'utilisateur.
+        console.warn("audioRecorder.stop() a échoué (probablement enregistrement trop court):", stopErr);
+        setPhase("idle");
+        return;
+      }
+
       setPhase("thinking");
 
       if (!uri) throw new Error("Aucun enregistrement disponible.");

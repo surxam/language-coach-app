@@ -32,21 +32,21 @@ export function AppHeader({ onMenuPress, size = "default", leftIcon, onLeftPress
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        paddingHorizontal: isLarge ? 24 : 20,
+        paddingHorizontal:20,
         paddingTop: 54,
-        paddingBottom: isLarge ? 0 : 6,
+        paddingBottom: 6,
       }}
     >
       <Pressable hitSlop={10} onPress={onLeftPress ?? onMenuPress}>
-        {leftIcon ?? <Menu size={23} color={TEXT} strokeWidth={isLarge ? 2.8 : 2.4} />}
+        {leftIcon ?? <Menu size={23} color={TEXT} strokeWidth={2.4} />}
       </Pressable>
 
       <Text
         style={{
           color: BRAND,
-          fontSize: isLarge ? 28 : 21,
+          fontSize:21,
           fontWeight: "800",
-          letterSpacing: isLarge ? -1 : -0.4,
+          letterSpacing:-0.4,
         }}
       >
         LinguistFlow
@@ -55,10 +55,10 @@ export function AppHeader({ onMenuPress, size = "default", leftIcon, onLeftPress
       <Pressable onPress={onMenuPress}>
         <Avatar
           name={user?.name}
-          size={isLarge ? 40 : 38}
-          bg={isLarge ? "#D9D4CF" : "#EEF2FF"}
-          borderColor={isLarge ? "#262329" : BRAND}
-          textColor={isLarge ? "#262329" : BRAND}
+          size={ 38}
+          bg={"#EEF2FF"}
+          borderColor={BRAND}
+          textColor={ BRAND}
         />
       </Pressable>
     </View>

@@ -7,8 +7,9 @@ import * as api from "@/lib/api";
 import { ProfileMenu } from "@/components/profile-menu";
 import { Screen } from "@/components/screen";
 import { AppHeader } from "@/components/header";
+import { getThemeStyle, fluencyMessage, scoreVisual } from "@/lib/theme-icon";
 import {
-  UtensilsCrossed, Clock, Check, AlertCircle, Volume2,
+  Clock, Check, AlertCircle,
 } from "lucide-react-native";
 
 const BG      = "#F8F5F7";
@@ -41,6 +42,8 @@ export default function ReviewScreen() {
   const cor = conv?.correction;
   const fb = cor?.feedback;
   const score = cor?.score ?? null;
+  const themeStyle = getThemeStyle(fb?.theme ?? "");
+  const sv = scoreVisual(score);
 
   if (loading) {
     return (
@@ -70,8 +73,7 @@ export default function ReviewScreen() {
             </Text>
             <Text style={{ color: MUTED, fontSize: 14, textAlign: "center", marginTop: 8,
               lineHeight: 20, paddingHorizontal: 6 }}>
-              Votre discussion sur le thème "{fb?.theme ?? "Session"}" est terminée. Vous avez fait
-              preuve d'une excellente fluidité.
+              Votre discussion sur le thème "{fb?.theme ?? "Session"}" est terminée. {fluencyMessage(score)}
             </Text>
           </View>
 
@@ -80,9 +82,9 @@ export default function ReviewScreen() {
               <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: CARD,
                 borderRadius: 16, padding: 14, shadowColor: "#0F172A", shadowOpacity: 0.05,
                 shadowRadius: 10, shadowOffset: { width: 0, height: 4 } }}>
-                <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: "#EEF2FF",
+                <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: themeStyle.bg,
                   alignItems: "center", justifyContent: "center", marginRight: 14 }}>
-                  <UtensilsCrossed size={19} color={BRAND} />
+                  <themeStyle.Icon size={19} color={themeStyle.color} />
                 </View>
                 <View>
                   <Text style={{ color: MUTED, fontSize: 11 }}>Thème</Text>
@@ -95,9 +97,9 @@ export default function ReviewScreen() {
               <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: CARD,
                 borderRadius: 16, padding: 14, shadowColor: "#0F172A", shadowOpacity: 0.05,
                 shadowRadius: 10, shadowOffset: { width: 0, height: 4 } }}>
-                <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: "#EEF2FF",
+                <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: "#EFF6FF",
                   alignItems: "center", justifyContent: "center", marginRight: 14 }}>
-                  <Clock size={19} color={BRAND} />
+                  <Clock size={19} color="#3B82F6" />
                 </View>
                 <View>
                   <Text style={{ color: MUTED, fontSize: 11 }}>Durée</Text>
@@ -110,9 +112,9 @@ export default function ReviewScreen() {
               <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: CARD,
                 borderRadius: 16, padding: 14, shadowColor: "#0F172A", shadowOpacity: 0.05,
                 shadowRadius: 10, shadowOffset: { width: 0, height: 4 } }}>
-                <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: "#EEF2FF",
+                <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: sv.bg,
                   alignItems: "center", justifyContent: "center", marginRight: 14 }}>
-                  <Volume2 size={19} color={BRAND} />
+                  <sv.Icon size={19} color={sv.color} />
                 </View>
                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
                   <View>
@@ -121,7 +123,6 @@ export default function ReviewScreen() {
                       {score != null ? score.toFixed(1) : "—"}/10
                     </Text>
                   </View>
-                  {score != null && <Check size={20} color={SUCCESS} strokeWidth={2.8} />}
                 </View>
               </View>
 
