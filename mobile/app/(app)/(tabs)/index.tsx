@@ -79,17 +79,16 @@ export default function PracticeScreen() {
 
   const onStop = async () => {
     if (!conversationId) {
-      router.replace("/session-ended");
+      router.replace("/review");
       return;
     }
 
     setEnding(true);
     try {
       await api.endConversation(conversationId, history);
-      const savedId = conversationId;
       setConversationId(null);
       resetHistory();
-      router.replace({ pathname: "/session-ended", params: { id: String(savedId) } });
+      router.replace("/review");
     } catch {
       Alert.alert("Erreur", "Impossible de terminer la discussion.");
     } finally {

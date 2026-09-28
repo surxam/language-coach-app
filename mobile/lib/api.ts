@@ -1,3 +1,4 @@
+import { File } from "expo-file-system";
 import { getToken } from "./storage";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:4000";
@@ -102,11 +103,8 @@ export async function respondToAudio(
 
   const attempt = async (): Promise<{ userText: string; aiText: string }> => {
     const formData = new FormData();
-    formData.append("audio", {
-      uri: audioUri,
-      name: "speech.m4a",
-      type: "audio/m4a",
-    } as unknown as Blob);
+    const audioFile = new File(audioUri);
+    formData.append("audio", audioFile, "speech.m4a");
     formData.append("history", JSON.stringify(history));
 
     const controller = new AbortController();
